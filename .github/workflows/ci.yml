@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish-cf:
+    runs-on: ubuntu-latest
+    container:
+      image: quay.io/jitesoft/ubuntu:latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: apt-get update && apt-get install -y mdbook npm
+
+      - run: mdbook build
+      # upload
+      - uses: actions/upload-artifact@v4
+        with:
+          name: book
+          path: book
+
+      # publish
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
